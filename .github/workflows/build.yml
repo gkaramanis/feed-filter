@@ -1,0 +1,57 @@
+name: Build feeds
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  push:
+    branches: [main]
+    paths:
+      - feeds.yaml
+      - filter.py
+      - requirements.txt
+      - .github/workflows/build.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      # A failed feed falls back to its published copy and fails this step;
+      # the steps below still deploy the rest, and the run is marked failed.
+      - name: Filter feeds
+        run: python filter.py
+        env:
+          PAGES_URL: ${{ steps.pages.outputs.base_url }}
+
+      - if: ${{ !cancelled() && hashFiles('public/index.html') != '' }}
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public
+
+      - id: deploy
+        if: ${{ !cancelled() && hashFiles('public/index.html') != '' }}
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,21 @@
+# One entry per filtered feed. Output: <pages-url>/<name>.xml
+#
+#   name   letters, digits and hyphens; becomes the file name
+#   url    source RSS or Atom feed
+#   keep   regex; keep only items that match   (use keep or drop, not both)
+#   drop   regex; remove items that match
+#   field  what the regex is tested against: title (default), description,
+#          category or link. Matching ignores case.
+#   limit     optional; keep only the first N matching items (newest first in
+#             most feeds)
+#   fulltext  optional, true/false; fetch each kept article and put its text
+#             in the feed. Items whose text can't be extracted keep their
+#             summary. Text already published is reused, so only new posts
+#             are fetched.
+
+- name: datawrapper-dispatch
+  title: Datawrapper Blog – Data Vis Dispatch
+  url: https://www.datawrapper.de/blog/feed.xml
+  keep: '^Data Vis Dispatch'
+  limit: 10
+  fulltext: true
